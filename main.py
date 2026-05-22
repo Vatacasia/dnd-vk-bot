@@ -5,15 +5,14 @@ import server
 import threading
 import asyncio
 import random
+from bot_logic import send_game_request_to_admin
 
 vk_session = vk_api.VkApi(token=config.VK_TOKEN)
 vk = vk_session.get_api()
 longpoll = vk_api.bot_longpoll.VkBotLongPoll(vk_session, group_id=238963448)
 
-
 def get_random_id():
     return random.randint(1, 2**63 - 1)
-
 
 def run_bot():
     print("[Бот] Запущен и слушает сообщения...")
@@ -36,9 +35,36 @@ def run_bot():
                     print('[Бот] Ответ отправлен!')
                 except Exception as e:
                     print(f'[Бот] Ошибка: {e}')
+            
+            # НОВАЯ ЛОГИКА: Обработка D&D заявок
+            elif text.startswith('/заявка') or 'заявка' in text:
+                print('[Бот] Обнаружена D&D заявка, обрабатываю...')
+                # Создаем event loop для async функции
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
+                
+                # Тестовые данные (замените на реальные из сообщения)
+                test_data = {
+                    'demands': [{
+                        'first_name': 'Тестовый',
+                        'last_name': 'Игрок',
+                        'vk_id': peer_id,
+                        'for_week': '2026-06-01',
+                        'slots': [{'name': 'Вечер', 'valid_from': '18:00', 'valid_until': '22:00'}]
+                    }]
+                }
+                
+                # Запускаем асинхронную функцию
+                loop.run_until_complete(
+                    send_game_request_to_admin(vk_session, test_data)
+                )
+                loop.close()
+                print('[Бот] Заявка отправлена админу!')
+
 
 def run_server():
     asyncio.run(server.start_http_server())
+
 
 server_thread = threading.Thread(target=run_server, daemon=True)
 server_thread.start()
