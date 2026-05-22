@@ -15,46 +15,43 @@ def get_random_id():
     return random.randint(1, 2**63 - 1)
 
 def run_bot():
-    print("[Бот] Запущен и слушает сообщения...")
+    print("[Бот] запущен и слушает сообщения...")
     for event in longpoll.listen():
         if event.type == vk_api.bot_longpoll.VkBotEventType.MESSAGE_NEW:
             msg = event.object.message
             peer_id = msg['peer_id']
             text = msg.get('text', '').lower()
-            
-            print(f'[Бот] Получено сообщение от {peer_id}: "{text}"')
-            
+
+            print(f'[Бот] получено сообщение от {peer_id}: "{text}"')
+
             if text == 'гол':
-                print('[Бот] Обнаружено "гол", отправляю ответ...')
+                print('[Бот] обнаружено "гол", отправляю ответ')
                 try:
                     vk.messages.send(
                         peer_id=peer_id,
                         message='я бутерброд',
                         random_id=get_random_id()
                     )
-                    print('[Бот] Ответ отправлен!')
+                    print('[Бот] ответ отправлен!')
                 except Exception as e:
-                    print(f'[Бот] Ошибка: {e}')
-            
-            # НОВАЯ ЛОГИКА: Обработка D&D заявок
+                    print(f'[Бот] ошибка: {e}')
+
             elif text.startswith('/заявка') or 'заявка' in text:
-                print('[Бот] Обнаружена D&D заявка, обрабатываю...')
-                # Создаем event loop для async функции
+                print('[Бот] обнаружена заявка, обрабатываю...')
+
                 loop = asyncio.new_event_loop()
                 asyncio.set_event_loop(loop)
-                
-                # Тестовые данные (замените на реальные из сообщения)
+
                 test_data = {
                     'demands': [{
-                        'first_name': 'Тестовый',
-                        'last_name': 'Игрок',
+                        'first_name': 'писькин',
+                        'last_name': 'попин',
                         'vk_id': peer_id,
                         'for_week': '2026-06-01',
                         'slots': [{'name': 'Вечер', 'valid_from': '18:00', 'valid_until': '22:00'}]
                     }]
                 }
-                
-                # Запускаем асинхронную функцию
+
                 loop.run_until_complete(
                     send_game_request_to_admin(vk_session, test_data)
                 )
@@ -70,5 +67,5 @@ server_thread = threading.Thread(target=run_server, daemon=True)
 server_thread.start()
 
 if __name__ == "__main__":
-    print("[Бот] Запуск...")
+    print("[Бот] запуск...")
     run_bot()

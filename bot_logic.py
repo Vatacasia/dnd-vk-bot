@@ -27,7 +27,7 @@ async def send_game_request_to_admin(bot, data: dict):
 
     try:
         vk = bot.get_api()
-        
+
         vk.messages.send(
             user_id=config.ADMIN_VK_ID,
             message=msg,
